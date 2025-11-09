@@ -8,6 +8,7 @@ Language Server Protocol 实现 for Aether 编程语言。
 - **[快速入门 (QUICKSTART.md)](./QUICKSTART.md)** - 项目状态、测试方法、已实现功能
 - **[实现总结 (IMPLEMENTATION_SUMMARY.md)](./IMPLEMENTATION_SUMMARY.md)** - 技术细节、文件结构、修改记录
 - **[命名约定修正 (NAMING_FIX.md)](./NAMING_FIX.md)** - 函数命名从混合大小写到全大写的修正过程
+- **[注释提取功能 (COMMENT_EXTRACTION.md)](./COMMENT_EXTRACTION.md)** - ⭐ 新增：在代码补全中显示变量注释
 
 ## 🚀 快速开始
 
@@ -62,9 +63,45 @@ Language Server Protocol 实现 for Aether 编程语言。
   - 错误代码分类（E001-E004, W001）
 - **智能补全**:
   - 26 个关键字（带文档和示例）
-  - 80+ 内置函数（自动生成，带完整签名和分类）
+  - 53 个内置函数（UPPER_CASE，带完整签名和分类）
   - 用户定义符号（变量、函数）
+  - ⭐ **新增**：显示变量的注释文档
 - **丰富文档**: Markdown 格式的 hover 提示和补全文档
+- **注释提取**: 自动提取变量声明前的 `//` 和 `/* */` 注释，在补全时显示
+
+### 🆕 注释提取功能
+
+现在支持在代码补全中显示变量的注释！
+
+```aether
+// 这是用户的名字
+Set MY_NAME "Alice"
+
+// 用户的年龄
+// 注意：这是整数类型
+Set MY_AGE 25
+
+/* 这是一个重要的配置变量
+   它用来控制调试模式 */
+Set DEBUG_MODE True
+```
+
+当你输入 `MY` 然后按 `Ctrl+Space` 时，补全列表会显示：
+
+```
+MY_NAME     📦 Variable: MY_NAME
+            📖 这是用户的名字
+
+MY_AGE      📦 Variable: MY_AGE
+            📖 用户的年龄
+               注意：这是整数类型
+
+DEBUG_MODE  📦 Variable: DEBUG_MODE
+            📖 这是一个重要的配置变量
+               它用来控制调试模式
+```
+
+详细使用方法见 [COMMENT_EXTRACTION.md](./COMMENT_EXTRACTION.md)
 
 ### 内置函数分类
 

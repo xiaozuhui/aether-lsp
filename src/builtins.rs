@@ -425,3 +425,31 @@ pub fn builtin_to_completion_items() -> Vec<CompletionItem> {
         })
         .collect()
 }
+
+/// Find a builtin function by name (case-insensitive)
+pub fn find_builtin(name: &str) -> Option<BuiltinFunction> {
+    let name_upper = name.to_uppercase();
+    get_builtin_functions()
+        .into_iter()
+        .find(|f| f.name.to_uppercase() == name_upper)
+}
+
+/// Create hover content for a builtin function
+pub fn builtin_to_hover(func: &BuiltinFunction) -> Hover {
+    let content = format!(
+        "## {} (内置函数)\n\n**签名**: `{}`\n\n**描述**: {}\n\n**分类**: {}\n\n**示例**:\n```aether\n{}\n```",
+        func.name,
+        func.signature,
+        func.description,
+        func.category,
+        func.examples.join("\n")
+    );
+
+    Hover {
+        contents: HoverContents::Markup(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: content,
+        }),
+        range: None,
+    }
+}

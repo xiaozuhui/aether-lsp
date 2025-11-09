@@ -156,8 +156,95 @@ fn position_in_range(pos: Position, range: Range) -> bool {
     true
 }
 
+/// Find comment for a variable by searching for "Set VARIABLE_NAME" pattern
+fn find_comment_for_variable(text: &str, var_name: &str) -> String {
+    let lines: Vec<&str> = text.lines().collect();
+
+    // Search for the line containing "Set VARIABLE_NAME"
+    for (idx, line) in lines.iter().enumerate() {
+        let trimmed = line.trim();
+        if trimmed.starts_with("Set ") || trimmed.starts_with("set ") {
+            // Check if this line contains our variable name
+            let parts: Vec<&str> = trimmed.split_whitespace().collect();
+            if parts.len() >= 2 && parts[1] == var_name {
+                // Found the Set statement, now extract preceding comments
+                return extract_preceding_comment(text, idx);
+            }
+        }
+    }
+
+    String::new()
+}
+
+/// Extract comment from the lines above a given line
+fn extract_preceding_comment(text: &str, target_line: usize) -> String {
+    let lines: Vec<&str> = text.lines().collect();
+    if target_line == 0 || target_line > lines.len() {
+        return String::new();
+    }
+
+    let mut comments = Vec::new();
+    let mut line_idx = target_line.saturating_sub(1);
+
+    // Traverse upwards to collect comments
+    while line_idx > 0 {
+        line_idx -= 1;
+        let line = lines[line_idx].trim();
+
+        if line.is_empty() {
+            // Empty line - continue looking up
+            continue;
+        } else if line.starts_with("//") {
+            // Single-line comment
+            let comment = line.trim_start_matches("//").trim();
+            comments.insert(0, comment.to_string());
+        } else if line.starts_with("/*") && line.ends_with("*/") {
+            // Single-line block comment
+            let comment = line.trim_start_matches("/*").trim_end_matches("*/").trim();
+            comments.insert(0, comment.to_string());
+            break;
+        } else if line.ends_with("*/") {
+            // End of multi-line block comment - collect backwards
+            let mut block_lines = Vec::new();
+            let mut block_idx = line_idx;
+            let mut found_start = false;
+
+            loop {
+                let block_line = lines[block_idx];
+                block_lines.insert(0, block_line);
+
+                if block_line.trim().starts_with("/*") {
+                    found_start = true;
+                    break;
+                }
+
+                if block_idx == 0 {
+                    break;
+                }
+                block_idx -= 1;
+            }
+
+            if found_start {
+                // Extract content from block comment
+                let block_text = block_lines.join("\n");
+                let block_text = block_text
+                    .trim_start_matches("/*")
+                    .trim_end_matches("*/")
+                    .trim();
+                comments.insert(0, block_text.to_string());
+            }
+            break;
+        } else {
+            // Non-comment line - stop
+            break;
+        }
+    }
+
+    comments.join("\n")
+}
+
 /// Extract symbols from a statement
-fn extract_symbols_from_stmt(stmt: &Stmt, table: &mut SymbolTable, _text: &str) {
+fn extract_symbols_from_stmt(stmt: &Stmt, table: &mut SymbolTable, text: &str) {
     match stmt {
         Stmt::Set { name, .. } => {
             // Estimate line 0 as placeholder - we'll improve this with line tracking
@@ -171,7 +258,24 @@ fn extract_symbols_from_stmt(stmt: &Stmt, table: &mut SymbolTable, _text: &str) 
                     character: name.len() as u32,
                 },
             };
-            table.add_variable(name.clone(), range, Some(format!("Variable: {}", name)));
+
+            // Try to find the line where this Set statement appears
+            let comment = find_comment_for_variable(text, name);
+
+            let symbol = SymbolInfo {
+                name: name.clone(),
+                kind: SymbolKind::VARIABLE,
+                range,
+                selection_range: range,
+                documentation: if comment.is_empty() {
+                    String::new()
+                } else {
+                    comment
+                },
+                detail: Some(format!("Variable: {}", name)),
+            };
+
+            table.variables.push(symbol);
         }
         Stmt::FuncDef { name, params, body } => {
             let range = Range {
@@ -197,7 +301,7 @@ fn extract_symbols_from_stmt(stmt: &Stmt, table: &mut SymbolTable, _text: &str) 
 
             // Extract symbols from function body
             for body_stmt in body {
-                extract_symbols_from_stmt(body_stmt, table, _text);
+                extract_symbols_from_stmt(body_stmt, table, text);
             }
         }
         Stmt::GeneratorDef { name, params, body } => {
@@ -223,7 +327,7 @@ fn extract_symbols_from_stmt(stmt: &Stmt, table: &mut SymbolTable, _text: &str) 
             );
 
             for body_stmt in body {
-                extract_symbols_from_stmt(body_stmt, table, _text);
+                extract_symbols_from_stmt(body_stmt, table, text);
             }
         }
         Stmt::LazyDef { name, .. } => {
@@ -241,35 +345,35 @@ fn extract_symbols_from_stmt(stmt: &Stmt, table: &mut SymbolTable, _text: &str) 
         }
         Stmt::While { body, .. } | Stmt::For { body, .. } | Stmt::ForIndexed { body, .. } => {
             for body_stmt in body {
-                extract_symbols_from_stmt(body_stmt, table, _text);
+                extract_symbols_from_stmt(body_stmt, table, text);
             }
         }
         Stmt::Switch { cases, default, .. } => {
             for (_, case_body) in cases {
                 for case_stmt in case_body {
-                    extract_symbols_from_stmt(case_stmt, table, _text);
+                    extract_symbols_from_stmt(case_stmt, table, text);
                 }
             }
             if let Some(default_body) = default {
                 for default_stmt in default_body {
-                    extract_symbols_from_stmt(default_stmt, table, _text);
+                    extract_symbols_from_stmt(default_stmt, table, text);
                 }
             }
         }
         Stmt::Expression(expr) => {
-            extract_symbols_from_expr(expr, table, _text);
+            extract_symbols_from_expr(expr, table, text);
         }
         _ => {}
     }
 }
 
 /// Extract symbols from an expression (for nested lambdas, if expressions, etc.)
-fn extract_symbols_from_expr(expr: &Expr, table: &mut SymbolTable, _text: &str) {
+fn extract_symbols_from_expr(expr: &Expr, table: &mut SymbolTable, text: &str) {
     match expr {
-        Expr::Lambda { params, body } => {
+        Expr::Lambda { params: _, body } => {
             // Anonymous lambda - could track params if needed
             for body_stmt in body {
-                extract_symbols_from_stmt(body_stmt, table, _text);
+                extract_symbols_from_stmt(body_stmt, table, text);
             }
         }
         Expr::If {
@@ -279,16 +383,16 @@ fn extract_symbols_from_expr(expr: &Expr, table: &mut SymbolTable, _text: &str) 
             ..
         } => {
             for stmt in then_branch {
-                extract_symbols_from_stmt(stmt, table, _text);
+                extract_symbols_from_stmt(stmt, table, text);
             }
             for (_, elif_body) in elif_branches {
                 for stmt in elif_body {
-                    extract_symbols_from_stmt(stmt, table, _text);
+                    extract_symbols_from_stmt(stmt, table, text);
                 }
             }
             if let Some(else_body) = else_branch {
                 for stmt in else_body {
-                    extract_symbols_from_stmt(stmt, table, _text);
+                    extract_symbols_from_stmt(stmt, table, text);
                 }
             }
         }

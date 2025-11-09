@@ -13,6 +13,51 @@ pub struct AetherLspBackend {
     documents: DashMap<String, ParsedDocument>,
 }
 
+/// Extract the word (identifier) at the given position
+fn extract_word_at_position(text: &str, position: Position) -> Option<String> {
+    let lines: Vec<&str> = text.lines().collect();
+    if position.line as usize >= lines.len() {
+        return None;
+    }
+
+    let line = lines[position.line as usize];
+    let char_pos = position.character as usize;
+
+    if char_pos > line.len() {
+        return None;
+    }
+
+    // 找到单词的起始和结束位置
+    let mut start = char_pos;
+    let mut end = char_pos;
+
+    // 向左查找单词开始
+    while start > 0 {
+        let ch = line.chars().nth(start - 1)?;
+        if ch.is_alphanumeric() || ch == '_' {
+            start -= 1;
+        } else {
+            break;
+        }
+    }
+
+    // 向右查找单词结束
+    while end < line.len() {
+        let ch = line.chars().nth(end)?;
+        if ch.is_alphanumeric() || ch == '_' {
+            end += 1;
+        } else {
+            break;
+        }
+    }
+
+    if start < end {
+        Some(line[start..end].to_string())
+    } else {
+        None
+    }
+}
+
 impl AetherLspBackend {
     pub fn new(client: Client) -> Self {
         AetherLspBackend {
@@ -22,11 +67,24 @@ impl AetherLspBackend {
     }
 
     async fn parse_and_diagnose(&self, uri: Url, text: String) {
+        // 记录日志
+        self.client
+            .log_message(MessageType::INFO, format!("Parsing document: {}", uri))
+            .await;
+
         let mut parser = Parser::new(&text);
         let parsed = parser.parse();
 
         // 生成诊断信息
         let diagnostics = DiagnosticEngine::analyze(&parsed, &text);
+
+        // 记录诊断数量
+        self.client
+            .log_message(
+                MessageType::INFO,
+                format!("Found {} diagnostics for {}", diagnostics.len(), uri),
+            )
+            .await;
 
         // 缓存解析结果
         self.documents.insert(uri.to_string(), parsed);
@@ -75,11 +133,8 @@ impl LanguageServer for AetherLspBackend {
     }
 
     async fn did_open(&self, params: DidOpenTextDocumentParams) {
-        self.parse_and_diagnose(
-            params.text_document.uri,
-            params.text_document.text,
-        )
-        .await;
+        self.parse_and_diagnose(params.text_document.uri, params.text_document.text)
+            .await;
     }
 
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
@@ -95,11 +150,14 @@ impl LanguageServer for AetherLspBackend {
 
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
         let uri = params.text_document_position.text_document.uri.to_string();
-        
+
         let completions = if let Some(doc) = self.documents.get(&uri) {
             get_completions(&doc, params.text_document_position.position)
         } else {
-            get_completions(&ParsedDocument::default(), params.text_document_position.position)
+            get_completions(
+                &ParsedDocument::default(),
+                params.text_document_position.position,
+            )
         };
 
         Ok(Some(CompletionResponse::Array(completions)))
@@ -111,11 +169,21 @@ impl LanguageServer for AetherLspBackend {
             .text_document
             .uri
             .to_string();
+        let position = params.text_document_position_params.position;
+
+        // 记录日志
+        self.client
+            .log_message(
+                MessageType::INFO,
+                format!(
+                    "Hover requested at {}:{}",
+                    position.line, position.character
+                ),
+            )
+            .await;
 
         if let Some(doc) = self.documents.get(&uri) {
-            let position = params.text_document_position_params.position;
-            
-            // 查找符号信息
+            // 先查找用户定义的符号
             if let Some(symbol_info) = doc.symbols.find_at_position(position) {
                 return Ok(Some(Hover {
                     contents: HoverContents::Markup(MarkupContent {
@@ -124,6 +192,17 @@ impl LanguageServer for AetherLspBackend {
                     }),
                     range: Some(symbol_info.range),
                 }));
+            }
+
+            // 查找内置函数 - 需要从文档中提取当前位置的标识符
+            if let Some(word) = extract_word_at_position(&doc.text, position) {
+                self.client
+                    .log_message(MessageType::INFO, format!("Looking for builtin: {}", word))
+                    .await;
+
+                if let Some(builtin) = crate::builtins::find_builtin(&word) {
+                    return Ok(Some(crate::builtins::builtin_to_hover(&builtin)));
+                }
             }
         }
 
@@ -142,7 +221,7 @@ impl LanguageServer for AetherLspBackend {
 
         if let Some(doc) = self.documents.get(&uri) {
             let position = params.text_document_position_params.position;
-            
+
             if let Some(location) = doc.symbols.find_definition(position) {
                 return Ok(Some(GotoDefinitionResponse::Scalar(location)));
             }

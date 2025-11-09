@@ -18,12 +18,14 @@ export function activate(context: ExtensionContext) {
     // 尝试查找 LSP 服务器二进制文件
     const releasePath = path.join(context.extensionPath, '..', 'target', 'release', binaryName);
     const debugPath = path.join(context.extensionPath, '..', 'target', 'debug', binaryName);
-
+    const serverPath = context.asAbsolutePath(
+        path.join('bin', 'aether-lsp' + (process.platform === 'win32' ? '.exe' : ''))
+    );
     let serverCommand: string;
 
     // 优先使用 release 版本，否则使用 debug 版本
-    if (fs.existsSync(releasePath)) {
-        serverCommand = releasePath;
+    if (fs.existsSync(serverPath)) {
+        serverCommand = serverPath;
         console.log('[Aether LSP] 使用 release 版本:', serverCommand);
     } else if (fs.existsSync(debugPath)) {
         serverCommand = debugPath;
@@ -32,7 +34,7 @@ export function activate(context: ExtensionContext) {
         window.showErrorMessage(
             'Aether LSP: 找不到服务器可执行文件。请先运行 `cargo build --release`'
         );
-        console.error('[Aether LSP] 未找到二进制文件:', { releasePath, debugPath });
+        console.error('[Aether LSP] 未找到二进制文件:', { serverPath, debugPath });
         return;
     }
 

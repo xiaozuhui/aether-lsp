@@ -2,9 +2,10 @@
 
 use crate::builtins;
 use crate::parser::ParsedDocument;
+use crate::symbols::SymbolTable;
 use tower_lsp::lsp_types::*;
 
-pub fn get_completions(_doc: &ParsedDocument, _position: Position) -> Vec<CompletionItem> {
+pub fn get_completions(doc: &ParsedDocument, _position: Position) -> Vec<CompletionItem> {
     let mut completions = Vec::new();
 
     // 关键字补全
@@ -13,8 +14,11 @@ pub fn get_completions(_doc: &ParsedDocument, _position: Position) -> Vec<Comple
     // 内置函数补全 (从 builtins 模块自动生成)
     completions.extend(builtins::builtin_to_completion_items());
 
-    // TODO: 从文档符号表添加用户定义的函数和变量
-    // completions.extend(doc.symbols.to_completion_items());
+    // 用户定义的变量补全
+    completions.extend(get_variable_completions(&doc.symbols));
+
+    // 用户定义的函数补全
+    completions.extend(get_function_completions(&doc.symbols));
 
     completions
 }
@@ -62,6 +66,60 @@ fn get_keyword_completions() -> Vec<CompletionItem> {
             })),
             insert_text: Some(keyword.to_string()),
             insert_text_format: Some(InsertTextFormat::PLAIN_TEXT),
+            ..Default::default()
+        })
+        .collect()
+}
+
+/// Get variable completions from symbol table
+fn get_variable_completions(symbols: &SymbolTable) -> Vec<CompletionItem> {
+    symbols
+        .variables
+        .iter()
+        .map(|var| CompletionItem {
+            label: var.name.clone(),
+            kind: Some(CompletionItemKind::VARIABLE),
+            detail: var
+                .detail
+                .clone()
+                .or_else(|| Some(format!("Variable: {}", var.name))),
+            documentation: if !var.documentation.is_empty() {
+                Some(Documentation::MarkupContent(MarkupContent {
+                    kind: MarkupKind::Markdown,
+                    value: var.documentation.clone(),
+                }))
+            } else {
+                None
+            },
+            insert_text: Some(var.name.clone()),
+            insert_text_format: Some(InsertTextFormat::PLAIN_TEXT),
+            ..Default::default()
+        })
+        .collect()
+}
+
+/// Get function completions from symbol table
+fn get_function_completions(symbols: &SymbolTable) -> Vec<CompletionItem> {
+    symbols
+        .functions
+        .iter()
+        .map(|func| CompletionItem {
+            label: func.name.clone(),
+            kind: Some(CompletionItemKind::FUNCTION),
+            detail: func
+                .detail
+                .clone()
+                .or_else(|| Some(format!("Function: {}", func.name))),
+            documentation: if !func.documentation.is_empty() {
+                Some(Documentation::MarkupContent(MarkupContent {
+                    kind: MarkupKind::Markdown,
+                    value: func.documentation.clone(),
+                }))
+            } else {
+                None
+            },
+            insert_text: Some(format!("{}($1)", func.name)),
+            insert_text_format: Some(InsertTextFormat::SNIPPET),
             ..Default::default()
         })
         .collect()

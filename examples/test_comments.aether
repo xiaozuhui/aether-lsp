@@ -1,0 +1,34 @@
+// 这是用户的名字
+Set MY_NAME "Alice"
+
+// 用户的年龄
+// 注意：这是整数类型
+Set MY_AGE 25
+
+/* 这是一个重要的配置变量
+   它用来控制调试模式 */
+Set DEBUG_MODE True
+
+// 计算两个数的和
+Set SUM (MY_AGE + 5)
+
+/*
+多行注释示例
+这个变量存储了一个数组
+包含了前5个偶数
+*/
+Set EVEN_NUMBERS [2, 4, 6, 8, 10]
+
+// 无注释的变量
+Set NO_COMMENT_VAR 42
+
+// 函数：计算平方
+Func SQUARE(X) {
+    Return (X * X)
+}
+
+// 测试使用变量
+PRINTLN("Name:", MY_NAME)
+PRINTLN("Age:", MY_AGE)
+PRINTLN("Debug:", DEBUG_MODE)
+PRINTLN("Sum:", SUM)
