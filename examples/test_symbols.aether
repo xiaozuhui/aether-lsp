@@ -1,0 +1,26 @@
+# Aether 测试文件 - 符号提取验证
+
+Set MY_VAR 42
+Set MY_STRING "Hello Aether"
+
+Func CALCULATE_SUM(A, B) {
+    Return (A + B)
+}
+
+Func FIBONACCI(N) {
+    If (N <= 1) {
+        Return N
+    } Else {
+        Return (FIBONACCI((N - 1)) + FIBONACCI((N - 2)))
+    }
+}
+
+Generator COUNT_UP(MAX) {
+    Set I 0
+    While (I < MAX) {
+        Yield I
+        Set I (I + 1)
+    }
+}
+
+Set RESULT CALCULATE_SUM(10, 20)

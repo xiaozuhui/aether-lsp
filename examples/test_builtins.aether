@@ -1,0 +1,57 @@
+# Test builtin functions with correct uppercase naming
+
+# I/O Functions
+PRINTLN("Hello, Aether!")
+PRINT("Testing ")
+PRINTLN("uppercase functions")
+
+# Array Functions  
+Set NUMBERS [1, 2, 3, 4, 5]
+Set DOUBLED MAP(NUMBERS, Lambda X -> X * 2)
+Set EVENS FILTER(NUMBERS, Lambda X -> X % 2 == 0)
+Set TOTAL SUM(NUMBERS)
+Set MAXIMUM MAX(NUMBERS)
+
+PRINTLN("Numbers:", NUMBERS)
+PRINTLN("Doubled:", DOUBLED)
+PRINTLN("Evens:", EVENS)
+PRINTLN("Total:", TOTAL)
+PRINTLN("Max:", MAXIMUM)
+
+# String Functions
+Set TEXT "Hello World"
+Set WORDS SPLIT(TEXT, " ")
+Set UPPER_TEXT UPPER(TEXT)
+Set LOWER_TEXT LOWER(TEXT)
+
+PRINTLN("Original:", TEXT)
+PRINTLN("Words:", WORDS)
+PRINTLN("Upper:", UPPER_TEXT)
+PRINTLN("Lower:", LOWER_TEXT)
+
+# Math Functions
+Set VALUE -42.7
+PRINTLN("Absolute:", ABS(VALUE))
+PRINTLN("Floor:", FLOOR(VALUE))
+PRINTLN("Ceil:", CEIL(VALUE))
+PRINTLN("Sqrt of 16:", SQRT(16))
+PRINTLN("2^8 =", POW(2, 8))
+
+# Dict Functions
+Set USER {"name": "Alice", "age": 30, "city": "Beijing"}
+Set USER_KEYS KEYS(USER)
+Set USER_VALUES VALUES(USER)
+
+PRINTLN("User:", USER)
+PRINTLN("Keys:", USER_KEYS)
+PRINTLN("Values:", USER_VALUES)
+
+# Type Functions
+PRINTLN("Type of 42:", TYPE(42))
+PRINTLN("Type of 'hello':", TYPE("hello"))
+PRINTLN("Is number?", ISNUMBER(42))
+PRINTLN("Is string?", ISSTRING("hello"))
+
+# JSON Functions
+Set JSON_STR JSONSTRINGIFY(USER)
+PRINTLN("JSON:", JSON_STR)

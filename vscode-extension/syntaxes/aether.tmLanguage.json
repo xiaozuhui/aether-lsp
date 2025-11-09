@@ -1,0 +1,144 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "Aether",
+    "scopeName": "source.aether",
+    "patterns": [
+        {
+            "include": "#comments"
+        },
+        {
+            "include": "#keywords"
+        },
+        {
+            "include": "#strings"
+        },
+        {
+            "include": "#numbers"
+        },
+        {
+            "include": "#constants"
+        },
+        {
+            "include": "#functions"
+        },
+        {
+            "include": "#operators"
+        },
+        {
+            "include": "#variables"
+        }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [
+                {
+                    "name": "comment.line.double-slash.aether",
+                    "match": "//.*$"
+                },
+                {
+                    "name": "comment.block.aether",
+                    "begin": "/\\*",
+                    "end": "\\*/"
+                }
+            ]
+        },
+        "keywords": {
+            "patterns": [
+                {
+                    "name": "keyword.control.aether",
+                    "match": "\\b(Set|Func|Return|If|Elif|Else|While|For|In|Break|Continue|Generator|Yield|Lazy|Force|Switch|Case|Default|Import|Export|From|As|Lambda|Throw|Try|Catch)\\b"
+                }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                {
+                    "name": "string.quoted.triple.aether",
+                    "begin": "\"\"\"",
+                    "end": "\"\"\"",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.aether",
+                            "match": "\\\\."
+                        }
+                    ]
+                },
+                {
+                    "name": "string.quoted.double.aether",
+                    "begin": "\"",
+                    "end": "\"",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.aether",
+                            "match": "\\\\."
+                        }
+                    ]
+                }
+            ]
+        },
+        "numbers": {
+            "patterns": [
+                {
+                    "name": "constant.numeric.float.aether",
+                    "match": "\\b\\d+\\.\\d+\\b"
+                },
+                {
+                    "name": "constant.numeric.integer.aether",
+                    "match": "\\b\\d+\\b"
+                }
+            ]
+        },
+        "constants": {
+            "patterns": [
+                {
+                    "name": "constant.language.aether",
+                    "match": "\\b(True|False|Null)\\b"
+                }
+            ]
+        },
+        "functions": {
+            "patterns": [
+                {
+                    "name": "entity.name.function.aether",
+                    "match": "\\b([A-Z][A-Z0-9_]*)\\s*(?=\\()"
+                },
+                {
+                    "name": "support.function.builtin.aether",
+                    "match": "\\b(Println|Print|Length|Append|First|Last|Map|Filter|Reduce|Range|Sum|Mean|Std|Max|Min|Sort|Reverse|Join|Split|Upper|Lower|Trim|Contains|Replace|ReadFile|WriteFile|Type|String|Number|Boolean)\\b"
+                }
+            ]
+        },
+        "operators": {
+            "patterns": [
+                {
+                    "name": "keyword.operator.arithmetic.aether",
+                    "match": "\\+|-|\\*|/|%"
+                },
+                {
+                    "name": "keyword.operator.comparison.aether",
+                    "match": "==|!=|<=|>=|<|>"
+                },
+                {
+                    "name": "keyword.operator.logical.aether",
+                    "match": "&&|\\|\\||!"
+                },
+                {
+                    "name": "keyword.operator.assignment.aether",
+                    "match": "="
+                },
+                {
+                    "name": "keyword.operator.arrow.aether",
+                    "match": "->"
+                }
+            ]
+        },
+        "variables": {
+            "patterns": [
+                {
+                    "name": "variable.other.constant.aether",
+                    "match": "\\b[A-Z][A-Z0-9_]*\\b"
+                }
+            ]
+        }
+    }
+}

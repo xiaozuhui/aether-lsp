@@ -1,0 +1,158 @@
+// 测试文件: 展示 Aether 语法特性
+
+// ============ 变量声明 ============
+Set MY_VAR 42
+Set MY_NAME "Aether"
+Set MY_ARRAY [1, 2, 3, 4, 5]
+Set MY_DICT {"name": "Alice", "age": 30}
+
+// ============ 函数定义 ============
+Func ADD(A, B) {
+    Return (A + B)
+}
+
+Func FACTORIAL(N) {
+    If (N <= 1) {
+        Return 1
+    }
+    Return (N * FACTORIAL((N - 1)))
+}
+
+// ============ 控制流 ============
+If (MY_VAR > 0) {
+    Println("Positive number")
+} Elif (MY_VAR == 0) {
+    Println("Zero")
+} Else {
+    Println("Negative number")
+}
+
+// While 循环
+Set COUNTER 0
+While (COUNTER < 5) {
+    Println(COUNTER)
+    Set COUNTER (COUNTER + 1)
+}
+
+// For 循环
+For ITEM In MY_ARRAY {
+    Println(ITEM)
+}
+
+// 带索引的 For 循环
+For INDEX, VALUE In MY_ARRAY {
+    Println(String(INDEX) + ": " + String(VALUE))
+}
+
+// ============ 高阶函数 ============
+// Map: 将数组中每个元素乘以 2
+Set DOUBLED Map(MY_ARRAY, Lambda X -> (X * 2))
+Println(DOUBLED)
+
+// Filter: 过滤出偶数
+Set EVENS Filter(MY_ARRAY, Lambda X -> ((X % 2) == 0))
+Println(EVENS)
+
+// Reduce: 求和
+Set SUM Reduce(MY_ARRAY, Lambda (ACC, X) -> (ACC + X), 0)
+Println("Sum: " + String(SUM))
+
+// ============ 生成器 ============
+Generator FIBONACCI(N) {
+    Set A 0
+    Set B 1
+    For I In Range(0, N) {
+        Yield A
+        Set TEMP (A + B)
+        Set A B
+        Set B TEMP
+    }
+}
+
+Set FIB_NUMS FIBONACCI(10)
+Println("Fibonacci:")
+For NUM In FIB_NUMS {
+    Println(NUM)
+}
+
+// ============ 惰性求值 ============
+Lazy EXPENSIVE_CALCULATION(Func() {
+    Println("Computing expensive result...")
+    Return Sum(Range(1, 100000))
+})
+
+// 只在需要时才计算
+Println("Before force")
+Set RESULT Force(EXPENSIVE_CALCULATION)
+Println("Result: " + String(RESULT))
+
+// ============ Switch 语句 ============
+Set DAY 3
+Switch (DAY) {
+    Case 1:
+        Println("Monday")
+    Case 2:
+        Println("Tuesday")
+    Case 3:
+        Println("Wednesday")
+    Default:
+        Println("Other day")
+}
+
+// ============ 数组操作 ============
+Set NUMBERS Range(1, 10)
+Println("First: " + String(First(NUMBERS)))
+Println("Last: " + String(Last(NUMBERS)))
+Println("Length: " + String(Length(NUMBERS)))
+
+Set SORTED Sort(Reverse(NUMBERS))
+Println("Sorted: " + String(SORTED))
+
+// ============ 字符串操作 ============
+Set TEXT "Hello, Aether!"
+Println(Upper(TEXT))
+Println(Lower(TEXT))
+Println(Split(TEXT, " "))
+Println(Contains(TEXT, "Aether"))
+Println(Replace(TEXT, "Aether", "World"))
+
+// ============ 数学函数 ============
+Set NUMS [1, 2, 3, 4, 5]
+Println("Mean: " + String(Mean(NUMS)))
+Println("Std: " + String(Std(NUMS)))
+Println("Max: " + String(Max(NUMS)))
+Println("Min: " + String(Min(NUMS)))
+
+// ============ 异常处理 ============
+Func DIVIDE(A, B) {
+    If (B == 0) {
+        Throw "Division by zero"
+    }
+    Return (A / B)
+}
+
+Try {
+    Set RESULT DIVIDE(10, 0)
+} Catch (ERROR) {
+    Println("Error: " + String(ERROR))
+}
+
+// ============ Lambda 表达式 ============
+Set SQUARE Lambda X -> (X * X)
+Println(SQUARE(5))
+
+Set ADD_LAMBDA Lambda (A, B) -> (A + B)
+Println(ADD_LAMBDA(3, 7))
+
+// ============ 命名约定示例 ============
+// ✅ 正确的命名
+Set USER_NAME "Alice"
+Set MAX_CONNECTIONS 100
+Func CALCULATE_TOTAL(ITEMS) {
+    Return Sum(ITEMS)
+}
+
+// ❌ 错误的命名 (LSP 会报警告)
+// Set userName "Alice"        // 应该用 USER_NAME
+// Set maxConnections 100      // 应该用 MAX_CONNECTIONS
+// Func calculateTotal() {}    // 应该用 CALCULATE_TOTAL
