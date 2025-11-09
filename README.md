@@ -35,7 +35,7 @@ Language Server Protocol 实现 for Aether 编程语言。
 
 1. **🔴 文件监视器模式错误** - `**/.aether` → `**/*.aether`
    - 导致编辑文件后诊断不更新
-   
+
 2. **🔴 Windows 兼容性** - 自动添加 `.exe` 后缀
 
 3. **🟡 缺少错误处理** - 启动失败时显示错误提示

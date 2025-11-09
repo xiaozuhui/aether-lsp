@@ -14,13 +14,13 @@ let client: LanguageClient;
 export function activate(context: ExtensionContext) {
     // 确定二进制文件名（Windows 需要 .exe 后缀）
     const binaryName = process.platform === 'win32' ? 'aether-lsp.exe' : 'aether-lsp';
-    
+
     // 尝试查找 LSP 服务器二进制文件
     const releasePath = path.join(context.extensionPath, '..', 'target', 'release', binaryName);
     const debugPath = path.join(context.extensionPath, '..', 'target', 'debug', binaryName);
-    
+
     let serverCommand: string;
-    
+
     // 优先使用 release 版本，否则使用 debug 版本
     if (fs.existsSync(releasePath)) {
         serverCommand = releasePath;

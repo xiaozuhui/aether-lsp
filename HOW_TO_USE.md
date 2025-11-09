@@ -40,6 +40,7 @@ code --install-extension vscode-extension/aether-lsp-0.1.0.vsix
 ## 🎯 当前已有的功能
 
 ✅ **可以用的**:
+
 - 语法高亮（关键字、字符串、注释）
 - 代码补全（26个关键字 + 53个内置函数）
 - 实时错误检测（语法错误 + 命名检查）
@@ -47,10 +48,12 @@ code --install-extension vscode-extension/aether-lsp-0.1.0.vsix
 - 跳转到定义
 
 ⚠️ **部分工作**:
+
 - 符号位置不精确（跳转可能不准）
 - Hover 功能未完全实现
 
 ❌ **还没有**:
+
 - 代码格式化
 - 重命名
 - 查找引用
@@ -134,7 +137,7 @@ A: 参考 ROADMAP.md 中的"适合新手的任务"
 
 ---
 
-## 🎉 开始使用吧！
+## 🎉 开始使用吧
 
 ```bash
 # 最快方法：

@@ -6,9 +6,10 @@
 
 这是最快的测试方式，适合开发调试。
 
-#### 步骤：
+#### 步骤
 
 1. **构建项目**
+
    ```bash
    cd /Users/xuzh/codes/aether-lsp
    ./build.sh
@@ -33,14 +34,16 @@
 
 将扩展打包成 `.vsix` 文件，可以安装到任何 VSCode 中。
 
-#### 步骤：
+#### 步骤
 
 1. **安装 vsce 打包工具**
+
    ```bash
    npm install -g @vscode/vsce
    ```
 
 2. **打包扩展**
+
    ```bash
    cd vscode-extension
    vsce package
@@ -48,8 +51,9 @@
    ```
 
 3. **安装扩展**
-   
+
    **方法 A - 命令行安装：**
+
    ```bash
    code --install-extension aether-lsp-0.1.0.vsix
    ```
@@ -92,6 +96,7 @@ PRI█
 ```
 
 应该看到：
+
 - `PRINT` - 打印值(不换行)
 - `PRINTLN` - 打印值到控制台并换行
 
@@ -103,6 +108,7 @@ MA█
 ```
 
 应该看到：
+
 - `MAP` - 对数组每个元素应用函数
 - `MAX` - 返回最大值
 
@@ -180,9 +186,11 @@ Set RESULT MY_FUNCTION(5)
 ### 优先级 1: 核心改进（1-2 周）
 
 #### 1.1 精确符号位置 ⭐⭐⭐
+
 **问题**: 当前符号位置都是 `line: 0`，导致跳转不准确
 
 **解决方案**:
+
 ```rust
 // 在 Parser 中为每个 AST 节点添加 Span
 pub struct Span {
@@ -200,14 +208,17 @@ pub struct Stmt {
 **工作量**: 2-3 天
 
 #### 1.2 完善 Hover 功能 ⭐⭐⭐
+
 **当前状态**: `hover()` 返回 `None`
 
 **需要实现**:
+
 - 变量悬停 → 显示类型（如果有类型推断）
 - 函数悬停 → 显示完整签名和文档
 - 内置函数 → 显示分类、签名、示例
 
 **示例**:
+
 ```rust
 impl Backend {
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
@@ -233,15 +244,18 @@ impl Backend {
 **工作量**: 1-2 天
 
 #### 1.3 代码格式化 ⭐⭐
+
 **功能**: 自动格式化 Aether 代码
 
 **需要实现**:
+
 - 统一缩进（4 空格）
 - 运算符周围空格
 - 括号对齐
 - 多行数组/字典格式化
 
 **示例**:
+
 ```aether
 # 格式化前
 Set MY_VAR[1,2,3]
@@ -261,9 +275,11 @@ Func MY_FUNC(X) {
 ### 优先级 2: 高级功能（2-4 周）
 
 #### 2.1 重命名功能 ⭐⭐⭐
+
 **功能**: 智能重命名变量/函数，更新所有引用
 
 **实现步骤**:
+
 1. 找到所有引用位置
 2. 验证新名称符合命名约定
 3. 批量更新所有位置
@@ -271,14 +287,17 @@ Func MY_FUNC(X) {
 **工作量**: 2-3 天
 
 #### 2.2 查找所有引用 ⭐⭐
+
 **功能**: 找到变量/函数的所有使用位置
 
 **工作量**: 1-2 天
 
 #### 2.3 代码片段（Snippets）⭐⭐
+
 **功能**: 快速插入常用代码模板
 
 **示例**:
+
 ```json
 {
   "for": {
@@ -303,6 +322,7 @@ Func MY_FUNC(X) {
 **工作量**: 1 天
 
 #### 2.4 工作区符号搜索 ⭐
+
 **功能**: `Cmd+T` 快速搜索项目中的所有符号
 
 **工作量**: 2 天
@@ -312,9 +332,11 @@ Func MY_FUNC(X) {
 ### 优先级 3: 语义分析（1-2 月）
 
 #### 3.1 类型推断 ⭐⭐⭐
+
 **功能**: 静态分析变量类型
 
 **示例**:
+
 ```aether
 Set X 42          # 推断: Number
 Set Y "hello"     # 推断: String
@@ -326,6 +348,7 @@ Set Z [1, 2, 3]   # 推断: Array<Number>
 **工作量**: 1-2 周
 
 #### 3.2 未使用变量检测 ⭐⭐
+
 **功能**: 检测定义但从未使用的变量
 
 ```aether
@@ -337,6 +360,7 @@ PRINTLN(USED)     # ✅ USED 被使用了
 **工作量**: 3-5 天
 
 #### 3.3 类型错误检测 ⭐⭐
+
 **功能**: 检测类型不匹配
 
 ```aether
@@ -352,18 +376,23 @@ Set Z (X + Y)     # ❌ E005: Cannot add Number and String
 ### 优先级 4: 增强功能（可选）
 
 #### 4.1 代码折叠
+
 - 折叠函数体、循环体、注释块
 
 #### 4.2 面包屑导航
+
 - 显示当前所在函数/作用域
 
 #### 4.3 大纲视图
+
 - 在侧边栏显示文件结构
 
 #### 4.4 调试支持（DAP）
+
 - 断点、单步执行、变量查看
 
 #### 4.5 测试框架集成
+
 - 识别测试函数，一键运行测试
 
 ---
@@ -387,24 +416,28 @@ Set Z (X + Y)     # ❌ E005: Cannot add Number and String
 ## 📊 开发路线图
 
 ### 第 1 阶段: 稳定核心功能（当前）✅
+
 - [x] 完整解析器集成
 - [x] 符号表提取
 - [x] 基础补全
 - [x] 语法诊断
 
 ### 第 2 阶段: 用户体验优化（接下来 2 周）
+
 - [ ] 精确符号位置
 - [ ] Hover 功能完善
 - [ ] 代码格式化
 - [ ] 代码片段
 
 ### 第 3 阶段: 高级 IDE 功能（1 个月）
+
 - [ ] 重命名
 - [ ] 查找引用
 - [ ] 工作区符号
 - [ ] 类型推断基础
 
 ### 第 4 阶段: 语义分析（2-3 个月）
+
 - [ ] 完整类型系统
 - [ ] 未使用变量检测
 - [ ] 类型错误检测
@@ -424,6 +457,7 @@ Set Z (X + Y)     # ❌ E005: Cannot add Number and String
    - `src/backend.rs` - LSP 服务器主逻辑
 
 2. **运行测试**
+
    ```bash
    cargo test
    ```
@@ -445,6 +479,7 @@ Set Z (X + Y)     # ❌ E005: Cannot add Number and String
 ```
 
 查看 LSP 日志：
+
 - `Cmd+Shift+P` → "Developer: Show Logs" → "Extension Host"
 - 或点击 VSCode 输出面板，选择 "Aether Language Server"
 
@@ -452,28 +487,34 @@ Set Z (X + Y)     # ❌ E005: Cannot add Number and String
 
 ## 📚 相关资源
 
-- **Aether 官方文档**: https://docs.rs/aether-azathoth/0.3.0/aether/
-- **LSP 规范**: https://microsoft.github.io/language-server-protocol/
-- **tower-lsp 文档**: https://docs.rs/tower-lsp/
+- **Aether 官方文档**: <https://docs.rs/aether-azathoth/0.3.0/aether/>
+- **LSP 规范**: <https://microsoft.github.io/language-server-protocol/>
+- **tower-lsp 文档**: <https://docs.rs/tower-lsp/>
 
 ---
 
 ## ❓ 常见问题
 
 ### Q: 为什么补全不工作？
+
 **A**: 检查：
+
 1. 文件扩展名是 `.aether`
 2. LSP 服务器是否启动（查看 VSCode 输出面板）
 3. 重启 VSCode
 
 ### Q: 如何查看 LSP 日志？
-**A**: 
+
+**A**:
+
 1. 打开 VSCode 输出面板（Cmd+Shift+U）
 2. 在下拉菜单中选择 "Aether Language Server"
 3. 或在设置中启用 `"aether.trace.server": "verbose"`
 
 ### Q: 如何更新扩展？
+
 **A**:
+
 ```bash
 cd aether-lsp
 ./build.sh
@@ -481,9 +522,11 @@ cd aether-lsp
 ```
 
 ### Q: 扩展可以发布到市场吗？
+
 **A**: 可以！需要：
+
 1. 注册 Visual Studio Marketplace 账号
 2. 获取 Personal Access Token
 3. 运行 `vsce publish`
 
-详见: https://code.visualstudio.com/api/working-with-extensions/publishing-extension
+详见: <https://code.visualstudio.com/api/working-with-extensions/publishing-extension>
