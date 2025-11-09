@@ -2,6 +2,54 @@
 
 Language Server Protocol 实现 for Aether 编程语言。
 
+## 📖 快速导航
+
+- **[使用指南 (USAGE_GUIDE.md)](./USAGE_GUIDE.md)** - 完整的使用教程、功能演示、开发路线图
+- **[快速入门 (QUICKSTART.md)](./QUICKSTART.md)** - 项目状态、测试方法、已实现功能
+- **[实现总结 (IMPLEMENTATION_SUMMARY.md)](./IMPLEMENTATION_SUMMARY.md)** - 技术细节、文件结构、修改记录
+- **[命名约定修正 (NAMING_FIX.md)](./NAMING_FIX.md)** - 函数命名从混合大小写到全大写的修正过程
+
+## 🚀 快速开始
+
+### 1. 构建项目
+
+```bash
+./build.sh
+```
+
+### 2. 启动扩展（开发模式）
+
+- 在 VSCode 中打开此项目
+- 按 `F5` 启动扩展开发主机
+- 在新窗口打开 `examples/test_builtins.aether` 测试功能
+
+详细步骤见 [USAGE_GUIDE.md](./USAGE_GUIDE.md)
+
+---
+
+## 🐛 最近修复的关键问题
+
+### extension.ts 修复 (2025-11-09)
+
+修复了 VSCode 扩展中的 6 个问题：
+
+1. **🔴 文件监视器模式错误** - `**/.aether` → `**/*.aether`
+   - 导致编辑文件后诊断不更新
+   
+2. **🔴 Windows 兼容性** - 自动添加 `.exe` 后缀
+
+3. **🟡 缺少错误处理** - 启动失败时显示错误提示
+
+4. **🟡 缺少文件检查** - 检查 LSP 二进制是否存在
+
+5. **🟢 添加日志输出** - 便于调试和问题排查
+
+6. **🟢 Debug 模式配置** - 启用详细日志（`RUST_LOG=debug`）
+
+详见代码注释和提交记录。
+
+---
+
 ## 特性
 
 ### 核心功能 ✅
